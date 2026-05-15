@@ -140,7 +140,7 @@ class _LoginPageState extends State<LoginPage> {
       } else {
         await _showDialog(
           'Login Failed',
-          e.message ?? 'Not able to verify your account. Please try again later.',
+          e.message ?? 'Unable to verify your account. Please try again later.',
         );
       }
     } catch (e) {
