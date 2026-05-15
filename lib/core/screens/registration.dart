@@ -50,7 +50,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
           ),
           title: const Icon(
             Icons.check_circle,
-            color: Colors.green,
+            color: Colors.lightGreen,
             size: 60,
           ),
           content: const Column(
