@@ -16,7 +16,7 @@ class _ProfilePageState extends State<ProfilePage> {
   String _email = 'jane.doe@example.com';
   String _phone = '+1 234 567 891';
   String _location = '';
-  String _membership = 'Subcription Member';
+  String _membership = 'Subcription Members';
   bool _isLoading = true;
 
   @override
