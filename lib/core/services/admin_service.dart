@@ -49,7 +49,7 @@ class AdminService {
       }).toList();
     } catch (e) {
       if (kDebugMode) {
-        print('Error loading all users: $e');
+        print('Error loading all user: $e');
       }
       rethrow;
     }
