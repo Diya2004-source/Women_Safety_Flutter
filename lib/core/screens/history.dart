@@ -99,7 +99,7 @@ class _HistoryPageState extends State<HistoryPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Trigger SOS Alert'),
+          title: const Text('Trigger SOS Alert button'),
           content: Form(
             key: formKey,
             child: Column(
