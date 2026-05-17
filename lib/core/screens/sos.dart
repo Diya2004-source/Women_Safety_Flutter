@@ -15,7 +15,7 @@ class SosPage extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.all(24.0),
           child: Text(
-            'Emergency SOS activated. Help is on the way.',
+            'Emergency SOS activate. Help is on the way.',
             style: TextStyle(fontSize: 16),
             textAlign: TextAlign.center,
           ),
