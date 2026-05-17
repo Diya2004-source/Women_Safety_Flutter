@@ -51,7 +51,7 @@ class _FakeCallPageState extends State<FakeCallPage> {
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error playing audio: $e')),
+        SnackBar(content: Text('Error playing audio $e')),
       );
     }
   }
