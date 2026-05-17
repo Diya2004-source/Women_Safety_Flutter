@@ -78,7 +78,7 @@ class _ContactsPageState extends State<ContactsPage> {
   Future<void> _showAddContactDialog(int count) async {
     if (count >= 3) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('You can only add up to 3 contacts')),
+        const SnackBar(content: Text('You can only add up to 3 contact')),
       );
       return;
     }
