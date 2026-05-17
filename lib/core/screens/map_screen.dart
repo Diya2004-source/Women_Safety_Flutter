@@ -30,7 +30,7 @@ class _MapScreenState extends State<MapScreen> {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         setState(() {
-          _errorMessage = 'Location services are disabled.';
+          _errorMessage = 'Location service are disabled.';
         });
         return;
       }
