@@ -44,7 +44,7 @@ class _MapScreenState extends State<MapScreen> {
           permission == LocationPermission.deniedForever) {
         setState(() {
           _permissionDenied = true;
-          _errorMessage = 'Location permission denied.';
+          _errorMessage = 'Location permission is denied.';
         });
         return;
       }
