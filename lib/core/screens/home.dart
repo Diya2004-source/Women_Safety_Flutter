@@ -22,7 +22,7 @@ class _HomePageState extends State<HomePage> {
   String _avatarLetter = 'U';
 
   @override
-  void initState() { 
+  void initState() {
     super.initState();
     _loadUserName();
   }
@@ -126,7 +126,7 @@ class _HomePageState extends State<HomePage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Emergency alert has been sent to:'),
+            const Text('Emergency alert has been sent to'),
             const SizedBox(height: 12),
             _buildResultRow(
               Icons.message,
