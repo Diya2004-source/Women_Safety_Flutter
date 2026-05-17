@@ -26,7 +26,7 @@ class LocationService {
       }
 
       if (permission == LocationPermission.deniedForever) {
-        print('Location permissions are permanent denied');
+        print('Location permission are permanent denied');
         return null;
       }
 
