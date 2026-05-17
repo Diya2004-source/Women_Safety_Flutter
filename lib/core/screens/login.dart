@@ -129,7 +129,7 @@ class _LoginPageState extends State<LoginPage> {
       if (e.code == 'user-not-found') {
         await _showDialog(
           'User Not Found',
-          'No registered user found with this email. Please register first.',
+          'No registered user found with this email. Please register firsts.',
           redirectToRegister: true,
         );
       } else if (e.code == 'wrong-password') {
