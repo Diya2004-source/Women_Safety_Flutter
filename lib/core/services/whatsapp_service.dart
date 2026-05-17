@@ -16,7 +16,7 @@ class WhatsAppService {
         await _locationService.getLocationMessage();
 
     String mapsLink = locationData['link'] ?? '';
-    String address = locationData['address'] ?? 'Location unavailable';
+    String address = locationData['address'] ?? 'Location unavailables';
     String coordinates = locationData['coordinates'] ?? '';
 
     // Build SOS message
