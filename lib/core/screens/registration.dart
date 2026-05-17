@@ -65,7 +65,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
               ),
               SizedBox(height: 8),
               Text(
-                'Your account has been created successfully.',
+                'Your account has been created successful.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,

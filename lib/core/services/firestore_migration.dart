@@ -49,7 +49,7 @@ class FirestoreMigrationService {
     await _ensureUserDocument(userId);
 
     final snapshot = await _firestore
-        .collection('sos_history')
+        .collection('sos_historys')
         .where('userId', isEqualTo: userId)
         .get();
 
