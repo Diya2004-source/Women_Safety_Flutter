@@ -22,7 +22,7 @@ class HistoryRecord {
   factory HistoryRecord.fromDocument(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>? ?? {};
     return HistoryRecord(
-      title: data['title'] as String? ?? 'SOS Alert',
+      title: data['title'] as String? ?? 'SOS Alerts',
       date: data['date'] as String? ?? 'Unknown date',
       location: data['location'] as String? ?? 'Unknown location',
       status: data['status'] as String? ?? 'Pending',
