@@ -78,7 +78,7 @@ class _SplashScreenState extends State<SplashScreen>
                 .timeout(
                   const Duration(seconds: 10),
                   onTimeout: () =>
-                      throw TimeoutException('Firestore query timeout'),
+                      throw TimeoutException('Firestore query timeout after 10 seconds'),
                 );
 
             if (adminDoc.exists) {
