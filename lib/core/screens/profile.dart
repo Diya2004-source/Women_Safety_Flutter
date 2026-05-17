@@ -14,7 +14,7 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   String _name = 'Jane Delle';
   String _email = 'jane.doe@example.com';
-  String _phone = '+1 234 567 890';
+  String _phone = '+1 234 567 891';
   String _location = '';
   String _membership = 'Subcription Member';
   bool _isLoading = true;
