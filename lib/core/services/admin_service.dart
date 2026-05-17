@@ -155,16 +155,22 @@ class AdminService {
 
   Future<List<SOSModel>> getActiveSOSAlerts({int limit = 100}) async {
     try {
+      // Get all SOS alerts ordered by timestamp, then filter by status in code
+      // This avoids composite index requirement
       final snapshot = await _firestore
           .collection('sos_alerts')
-          .where('status', isEqualTo: 'active')
           .orderBy('timestamp', descending: true)
-          .limit(limit)
+          .limit(limit * 2) // Get extra to account for filtering
           .get();
 
-      return snapshot.docs
+      final alerts = snapshot.docs
           .map((doc) => SOSModel.fromMap(doc.data(), doc.id))
+          .where(
+              (alert) => alert.status == 'active' || alert.status == 'pending')
+          .take(limit)
           .toList();
+
+      return alerts;
     } catch (e) {
       if (kDebugMode) {
         print('Error loading active SOS alerts: $e');
@@ -186,10 +192,41 @@ class AdminService {
 
   Future<void> resolveSOSAlert(String alertId, String notes) async {
     try {
-      // Not implemented for now
+      final adminEmail = _auth.currentUser?.email ?? 'Unknown';
+
+      // Update main SOS alert document
+      await _firestore.collection('sos_alerts').doc(alertId).update({
+        'status': 'resolved',
+        'resolvedAt': FieldValue.serverTimestamp(),
+        'resolvedBy': adminEmail,
+        'notes': notes,
+      });
     } catch (e) {
       if (kDebugMode) {
         print('Error resolving SOS alert: $e');
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> updateSOSStatus(String alertId, String newStatus) async {
+    try {
+      final adminEmail = _auth.currentUser?.email ?? 'Unknown';
+
+      Map<String, dynamic> updateData = {
+        'status': newStatus,
+      };
+
+      if (newStatus == 'resolved') {
+        updateData['resolvedAt'] = FieldValue.serverTimestamp();
+        updateData['resolvedBy'] = adminEmail;
+      }
+
+      // Update main SOS alert document
+      await _firestore.collection('sos_alerts').doc(alertId).update(updateData);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error updating SOS status: $e');
       }
       rethrow;
     }

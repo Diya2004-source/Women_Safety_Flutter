@@ -103,6 +103,9 @@ class _SOSAlertsPageState extends State<SOSAlertsPage> {
                   onViewDetails: () {
                     // Show location on map
                   },
+                  onStatusChange: (newStatus) {
+                    _updateAlertStatus(alert.id, newStatus);
+                  },
                 );
               },
             );
@@ -161,5 +164,29 @@ class _SOSAlertsPageState extends State<SOSAlertsPage> {
         ],
       ),
     );
+  }
+
+  void _updateAlertStatus(String alertId, String newStatus) async {
+    try {
+      await _adminService.updateSOSStatus(alertId, newStatus);
+
+      if (mounted) {
+        setState(() {
+          _alertsFuture = _adminService.getActiveSOSAlerts();
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Alert status updated to $newStatus')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Error updating status: $e'),
+              backgroundColor: Colors.red),
+        );
+      }
+    }
   }
 }

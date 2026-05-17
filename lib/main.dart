@@ -1,7 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:women_safety/core/screens/splash_screen.dart';
 import 'firebase_options.dart';
-import '/core/screens/splash_screen.dart';
+import 'core/screens/map_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

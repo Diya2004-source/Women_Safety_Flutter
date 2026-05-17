@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'location_service.dart';
 
@@ -64,6 +65,7 @@ class WhatsAppService {
 
         if (sent) successCount++;
       } catch (e) {
+        debugPrint('WhatsAppService: error sending to $cleanPhone: $e');
         results.add({
           'contact': name,
           'phone': phone,
@@ -109,18 +111,18 @@ class WhatsAppService {
       message.writeln('');
     }
 
-    message.writeln('📍 *MY LOCATION:*');
+    message.writeln(' *MY LOCATION:*');
     message.writeln(address);
 
     if (mapsLink.isNotEmpty) {
       message.writeln('');
-      message.writeln('🗺️ *VIEW ON MAP:*');
+      message.writeln(' *VIEW ON MAP:*');
       message.writeln(mapsLink);
     }
 
     if (coordinates.isNotEmpty) {
       message.writeln('');
-      message.writeln('📌 *Coordinates:* $coordinates');
+      message.writeln(' *Coordinates:* $coordinates');
     }
 
     message.writeln('');
@@ -174,7 +176,7 @@ class WhatsAppService {
 
       return false;
     } catch (e) {
-      print('WhatsApp Error: $e');
+      debugPrint('WhatsAppService: _sendWhatsAppMessage error: $e');
       return false;
     }
   }

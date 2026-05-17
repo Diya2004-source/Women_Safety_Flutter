@@ -89,6 +89,7 @@ class _SOSHistoryPageState extends State<SOSHistoryPage> {
                   alert: alert,
                   onResolve: () {},
                   onViewDetails: () {},
+                  onStatusChange: (newStatus) {},
                 );
               },
             );

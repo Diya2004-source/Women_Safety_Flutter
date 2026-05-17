@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter_sms/flutter_sms.dart' as flutter_sms;
 import 'package:url_launcher/url_launcher.dart';
 import 'location_service.dart';
 
@@ -32,42 +34,78 @@ class SMSService {
     int successCount = 0;
     int failCount = 0;
 
-    // Send to all contacts
+    // Prepare recipient list
+    List<String> recipients = [];
     for (var contact in contacts) {
       String phone = contact['phone'] ?? '';
-      String name = contact['name'] ?? 'Contact';
-
-      if (phone.isEmpty) {
+      if (phone.isNotEmpty) {
+        // Ensure phone string contains digits and possible +
+        String cleaned = phone.replaceAll(RegExp(r'[^+0-9]'), '');
+        recipients.add(cleaned);
+      } else {
         results.add({
-          'contact': name,
+          'contact': contact['name'] ?? 'Contact',
           'phone': phone,
           'status': 'failed',
           'error': 'Empty phone number',
         });
         failCount++;
-        continue;
       }
+    }
 
-      try {
-        // Try to open SMS with pre-filled message
-        bool sent = await _sendSMSWithFallback(phone, sosMessage);
+    // Attempt to send SMS using flutter_sms (direct send on Android)
+    try {
+      if (recipients.isNotEmpty) {
+        if (kDebugMode) debugPrint('SMSService: sending SMS to $recipients');
+        String sendResult = await flutter_sms.sendSMS(
+          message: sosMessage,
+          recipients: recipients,
+        );
 
-        results.add({
-          'contact': name,
-          'phone': phone,
-          'status': sent ? 'sent' : 'opened',
-          'message': sosMessage,
-        });
+        // sendSMS returns a platform-specific result string; treat as success
+        for (var r in recipients) {
+          results.add({
+            'contact': r,
+            'phone': r,
+            'status': 'sent',
+            'message': sosMessage,
+            'platformResult': sendResult,
+          });
+          successCount++;
+        }
+      }
+    } catch (e) {
+      debugPrint('SMSService: direct send failed: $e');
 
-        if (sent) successCount++;
-      } catch (e) {
-        results.add({
-          'contact': name,
-          'phone': phone,
-          'status': 'failed',
-          'error': e.toString(),
-        });
-        failCount++;
+      // Fallback: open SMS app for each recipient using url_launcher
+      for (var contact in contacts) {
+        String phone = contact['phone'] ?? '';
+        String name = contact['name'] ?? 'Contact';
+
+        if (phone.isEmpty) continue;
+
+        try {
+          bool opened = await _sendSMSWithFallback(phone, sosMessage);
+          results.add({
+            'contact': name,
+            'phone': phone,
+            'status': opened ? 'opened' : 'failed',
+            'message': sosMessage,
+          });
+          if (opened) {
+            successCount++;
+          } else {
+            failCount++;
+          }
+        } catch (e) {
+          results.add({
+            'contact': name,
+            'phone': phone,
+            'status': 'failed',
+            'error': e.toString(),
+          });
+          failCount++;
+        }
       }
     }
 
@@ -106,17 +144,17 @@ class SMSService {
       message.writeln('');
     }
 
-    message.writeln('📍 MY LOCATION:');
+    message.writeln(' MY LOCATION:');
     message.writeln(address);
 
     if (mapsLink.isNotEmpty) {
       message.writeln('');
-      message.writeln('🗺️ VIEW ON MAP: $mapsLink');
+      message.writeln(' VIEW ON MAP: $mapsLink');
     }
 
     if (coordinates.isNotEmpty) {
       message.writeln('');
-      message.writeln('📌 Coordinates: $coordinates');
+      message.writeln(' Coordinates: $coordinates');
     }
 
     message.writeln('');
@@ -135,7 +173,7 @@ class SMSService {
       Uri uri = Uri.parse(smsUrl);
 
       if (await canLaunchUrl(uri)) {
-        await launchUrl(uri);
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
         return true;
       }
 
@@ -144,13 +182,13 @@ class SMSService {
       Uri fallbackUri = Uri.parse(fallbackUrl);
 
       if (await canLaunchUrl(fallbackUri)) {
-        await launchUrl(fallbackUri);
+        await launchUrl(fallbackUri, mode: LaunchMode.externalApplication);
         return true;
       }
 
       return false;
     } catch (e) {
-      print('SMS Error: $e');
+      debugPrint('SMSService: _sendSMSWithFallback error: $e');
       return false;
     }
   }
@@ -167,13 +205,13 @@ class SMSService {
       Uri uri = Uri.parse(smsUrl);
 
       if (await canLaunchUrl(uri)) {
-        await launchUrl(uri);
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
         return true;
       }
 
       return false;
     } catch (e) {
-      print('SMS Error: $e');
+      debugPrint('SMSService: sendSMS error: $e');
       return false;
     }
   }

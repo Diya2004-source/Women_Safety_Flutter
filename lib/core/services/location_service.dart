@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LocationService {
@@ -9,7 +11,7 @@ class LocationService {
       // Check if location services are enabled
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        print('Location services are disabled');
+        debugPrint('LocationService: Location services are disabled');
         return null;
       }
 
@@ -18,25 +20,31 @@ class LocationService {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          print('Location permissions are denied');
+          debugPrint('LocationService: Location permissions are denied');
           return null;
         }
       }
 
       if (permission == LocationPermission.deniedForever) {
-        print('Location permissions are permanently denied');
+        debugPrint(
+            'LocationService: Location permissions are permanently denied');
+        // Optionally prompt user to open app settings
+        try {
+          await Geolocator.openAppSettings();
+        } catch (_) {}
         return null;
       }
 
       // Get current position
+      // Attempt to get a high accuracy current location
       return await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
+          accuracy: LocationAccuracy.best,
           timeLimit: Duration(seconds: 15),
         ),
       );
     } catch (e) {
-      print('Error getting location: $e');
+      debugPrint('LocationService: Error getting location: $e');
       return null;
     }
   }
@@ -75,72 +83,106 @@ class LocationService {
       }
       return 'Unknown location';
     } catch (e) {
-      print('Error getting address: $e');
+      debugPrint('LocationService: Error getting address: $e');
       return 'Location unavailable';
     }
   }
 
-  /// Generate Google Maps link from coordinates
-  String generateGoogleMapsLink(double latitude, double longitude) {
-    return 'https://www.google.com/maps?q=$latitude,$longitude';
+  /// Generate OpenStreetMap link from coordinates
+  String generateOpenStreetMapLink(double latitude, double longitude) {
+    // Always return a valid OpenStreetMap URL. If coordinates are invalid
+    // (e.g., 0,0) this still points to the main map page.
+    if (latitude == 0 && longitude == 0) {
+      return 'https://www.openstreetmap.org';
+    }
+    return 'https://www.openstreetmap.org/?mlat=$latitude&mlon=$longitude';
   }
 
   /// Generate full location message with map link
   Future<Map<String, String>> getLocationMessage() async {
     Position? position = await getCurrentLocation();
 
-    if (position == null) {
-      return {
-        'link': '',
-        'address': 'Location unavailable',
-        'coordinates': '',
-      };
+    double lat = 0;
+    double lon = 0;
+    String address = 'Location unavailable';
+
+    if (position != null) {
+      lat = position.latitude;
+      lon = position.longitude;
+      try {
+        address = await getAddressFromCoordinates(lat, lon);
+      } catch (e) {
+        debugPrint('LocationService: reverse geocoding failed: $e');
+      }
+    } else {
+      debugPrint(
+          'LocationService: position is null, returning generic map link');
     }
 
-    String address = await getAddressFromCoordinates(
-      position.latitude,
-      position.longitude,
-    );
-
-    String mapsLink = generateGoogleMapsLink(
-      position.latitude,
-      position.longitude,
-    );
+    String mapsLink = generateOpenStreetMapLink(lat, lon);
 
     return {
       'link': mapsLink,
       'address': address,
-      'coordinates': '${position.latitude}, ${position.longitude}',
+      'coordinates':
+          position != null ? '${lat.toString()}, ${lon.toString()}' : '',
     };
   }
 
   /// Open location in maps app
   Future<void> openLocationInMaps(double latitude, double longitude) async {
-    String mapsUrl = generateGoogleMapsLink(latitude, longitude);
-    Uri uri = Uri.parse(mapsUrl);
+    try {
+      String mapsUrl = generateOpenStreetMapLink(latitude, longitude);
+      Uri uri = Uri.parse(mapsUrl);
 
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        debugPrint('LocationService: cannot launch maps uri: $uri');
+      }
+    } catch (e) {
+      debugPrint('LocationService: openLocationInMaps error: $e');
     }
   }
 
   /// Make phone call
   Future<void> makePhoneCall(String phoneNumber) async {
-    String telUrl = 'tel:$phoneNumber';
-    Uri uri = Uri.parse(telUrl);
+    try {
+      // Request phone permission at runtime if needed
+      try {
+        PermissionStatus p = await Permission.phone.status;
+        if (!p.isGranted) {
+          await Permission.phone.request();
+        }
+      } catch (e) {
+        debugPrint('LocationService: phone permission request error: $e');
+      }
+      String telUrl = 'tel:$phoneNumber';
+      Uri uri = Uri.parse(telUrl);
 
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        debugPrint('LocationService: cannot launch tel uri: $uri');
+      }
+    } catch (e) {
+      debugPrint('LocationService: makePhoneCall error: $e');
     }
   }
 
   /// Send SMS
   Future<void> sendSMS(String phoneNumber, String message) async {
-    String smsUrl = 'sms:$phoneNumber?body=${Uri.encodeComponent(message)}';
-    Uri uri = Uri.parse(smsUrl);
+    try {
+      String smsUrl = 'sms:$phoneNumber?body=${Uri.encodeComponent(message)}';
+      Uri uri = Uri.parse(smsUrl);
 
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        debugPrint('LocationService: cannot launch sms uri: $uri');
+      }
+    } catch (e) {
+      debugPrint('LocationService: sendSMS error: $e');
     }
   }
 }

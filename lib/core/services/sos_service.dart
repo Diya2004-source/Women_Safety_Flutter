@@ -40,6 +40,11 @@ class SOSService {
         print('SOS Debug: Triggering SOS for user $userId ($userEmail)');
       }
 
+      if (kDebugMode) {
+        debugPrint(
+            'Note: On emulator, phone calls and WhatsApp may not fully work. Test on a real device for full functionality.');
+      }
+
       // 2. Get user document for name
       final userDoc = await _firestore.collection('users').doc(userId).get();
       if (userDoc.exists) {
@@ -101,27 +106,43 @@ class SOSService {
           contacts.map((c) => {'name': c.name, 'phone': c.phone}).toList();
 
       // 6. Send SMS to all contacts
-      Map<String, dynamic> smsResult = await _smsService.sendSOSMessages(
-        contacts: contactList,
-        userName: userName,
-        customMessage: customMessage,
-      );
+      Map<String, dynamic> smsResult = {};
+      try {
+        smsResult = await _smsService.sendSOSMessages(
+          contacts: contactList,
+          userName: userName,
+          customMessage: customMessage,
+        );
+        if (kDebugMode) debugPrint('SOS Debug: SMS result: $smsResult');
+      } catch (e) {
+        if (kDebugMode) debugPrint('SOS Debug: SMS sending error: $e');
+      }
 
       // 7. Send WhatsApp to all contacts
-      Map<String, dynamic> whatsappResult =
-          await _whatsAppService.sendSOSWhatsAppMessages(
-        contacts: contactList,
-        userName: userName,
-        customMessage: customMessage,
-      );
+      Map<String, dynamic> whatsappResult = {};
+      try {
+        whatsappResult = await _whatsAppService.sendSOSWhatsAppMessages(
+          contacts: contactList,
+          userName: userName,
+          customMessage: customMessage,
+        );
+        if (kDebugMode)
+          debugPrint('SOS Debug: WhatsApp result: $whatsappResult');
+      } catch (e) {
+        if (kDebugMode) debugPrint('SOS Debug: WhatsApp sending error: $e');
+      }
 
       // 8. Make auto-call to primary contact (1st contact)
       bool callInitiated = false;
       String primaryContactPhone = '';
       if (contacts.isNotEmpty) {
         primaryContactPhone = contacts[0].phone;
-        await _locationService.makePhoneCall(primaryContactPhone);
-        callInitiated = true;
+        try {
+          await _locationService.makePhoneCall(primaryContactPhone);
+          callInitiated = true;
+        } catch (e) {
+          if (kDebugMode) debugPrint('SOS Debug: auto-call error: $e');
+        }
       }
 
       // 9. Save SOS history to Firestore
