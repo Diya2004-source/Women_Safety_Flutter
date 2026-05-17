@@ -18,7 +18,7 @@ class SMSService {
 
     String mapsLink = locationData['link'] ?? '';
     String address = locationData['address'] ?? 'Location unavailable';
-    String coordinates = locationData['coordinates'] ?? '';
+    String coordinates = locationData['coordinate'] ?? '';
 
     // Build SOS message
     String sosMessage = _buildSOSMessage(
