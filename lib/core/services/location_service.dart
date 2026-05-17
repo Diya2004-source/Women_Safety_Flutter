@@ -26,12 +26,7 @@ class LocationService {
       }
 
       if (permission == LocationPermission.deniedForever) {
-        debugPrint(
-            'LocationService: Location permissions are permanently denied');
-        // Optionally prompt user to open app settings
-        try {
-          await Geolocator.openAppSettings();
-        } catch (_) {}
+        print('Location permissions are permanent denied');
         return null;
       }
 
