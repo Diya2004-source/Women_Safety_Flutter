@@ -18,7 +18,7 @@ class WomenSafetyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'SafeGuard',
+      title: 'SafeGuards',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.pink,
